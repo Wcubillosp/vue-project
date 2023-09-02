@@ -5,7 +5,7 @@ import CardCripto from '@/components/cripto/card/CardCripto.vue'
 import PaginationTools from '@/components/tools/PaginationTools.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
-import { ref, onBeforeMount } from 'vue'
+import { ref, onBeforeMount, watch } from 'vue'
 
 library.add(faMagnifyingGlass)
 
@@ -13,13 +13,10 @@ let allCriptos: ICripto[] = []
 const criptos = ref<ICripto[]>([])
 const pageCripto = ref<ICripto[]>([])
 const current = ref(1)
+const maxItems = 10
 
 const setCurrent = (value: number) => {
   current.value = value
-}
-
-const setPageCripto = (value: ICripto[]) => {
-  pageCripto.value = value
 }
 
 const search = (e: Event) => {
@@ -29,11 +26,20 @@ const search = (e: Event) => {
       allCripto.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     criptos.value = filteredCriptos
-    current.value = 1
   } else {
     criptos.value = allCriptos
   }
+  current.value = 1
 }
+
+watch(
+  [current, criptos],
+  () => {
+    const index = current.value - 1
+    pageCripto.value = criptos.value.slice(index * maxItems, index * maxItems + maxItems)
+  },
+  { immediate: true }
+)
 
 onBeforeMount(() => {
   CriptoService.getCoinMarketcap().then((res) => {
@@ -62,12 +68,7 @@ onBeforeMount(() => {
         <CardCripto v-for="(cripto, index) in pageCripto" :key="index" :cripto="cripto" />
       </div>
       <div v-if="criptos.length > 0">
-        <PaginationTools
-          :data="criptos"
-          :maxItems="10"
-          @setCurrent="setCurrent"
-          @setPageCripto="setPageCripto"
-        />
+        <PaginationTools :data="criptos" :maxItems="maxItems" @setCurrent="setCurrent" />
       </div>
     </div>
   </div>

@@ -2,7 +2,7 @@
 import type { ICripto } from '@/models/cripto/cripto'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
 library.add(faArrowLeft, faArrowRight)
 
@@ -13,17 +13,6 @@ let { data, maxItems } = defineProps<{
 
 const emit = defineEmits(['setCurrent', 'setPageCripto'])
 const count = ref(1)
-const slicedData = ref<ICripto[]>(data)
-
-watch(
-  [count, data],
-  () => {
-    const index = count.value - 1
-    slicedData.value = data.slice(index * maxItems, index * maxItems + maxItems)
-    emit('setPageCripto', slicedData.value)
-  },
-  { immediate: true }
-)
 
 const handleBack = () => {
   if (count.value !== 1) {
